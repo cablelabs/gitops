@@ -1,0 +1,12 @@
+generatorOptions:
+  annotations:
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+    argocd.argoproj.io/sync-options: Validate=false
+resources:
+  - elasticsearch-namespace.yml
+  - elasticsearch-operator-group.yml
+  - elasticsearch-subscription.yml
+  - logging-namespace.yml
+  - logging-operator-group.yml
+  - logging-subscription.yml
+  - logging-instance.yml

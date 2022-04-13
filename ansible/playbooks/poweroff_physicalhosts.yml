@@ -1,0 +1,18 @@
+- name: Power off physical servers
+  hosts: all:!bootstrap:!utility:!switches
+  gather_facts: false
+  serial: 1
+  tasks:
+
+  - name: PowerOff server using redfish
+    community.general.redfish_command:
+      baseuri: "{{ bmc_host }}"
+      username: "{{ bmc_user }}"
+      password: "{{ bmc_password }}"
+      category: "Systems"
+      command: "PowerForceOff"
+    delegate_to: localhost
+
+  - name: Pause 5 seconds before powering off the next server
+    pause:
+      seconds: 5

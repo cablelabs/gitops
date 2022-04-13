@@ -1,0 +1,18 @@
+- name: Power on physical servers
+  hosts: all:!bootstrap:!utility:!switches
+  gather_facts: false
+  serial: 1
+  tasks:
+
+  - name: PowerOn server using redfish
+    community.general.redfish_command:
+      baseuri: "{{ bmc_host }}"
+      username: "{{ bmc_user }}"
+      password: "{{ bmc_password }}"
+      category: "Systems"
+      command: "PowerOn"
+    delegate_to: localhost
+
+  - name: Pause 15 seconds before powering on the next server
+    pause:
+      seconds: 15

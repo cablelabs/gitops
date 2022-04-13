@@ -1,0 +1,21 @@
+---
+- name: set_fact idrac command
+  ansible.builtin.set_fact:
+    idracadm: "/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r {{ bmc_host }} -u {{ bmc_user }} -p {{ bmc_password }}"
+    image_url: "{{ utility_http_scheme }}://{{ utility_host }}:{{ utility_http_port }}/{{ cluster_name }}/boot-isos/rhcos_install-{{ inventory_hostname_short }}.iso"
+
+- name: Mount Virtual Media ISO
+  ansible.builtin.command: "{{ idracadm }} remoteimage -c -l {{ image_url }}"
+  delegate_to: localhost
+
+- name: Set onetime boot option to Virtual Media
+  ansible.builtin.command: "{{ idracadm }} set iDRAC.VirtualMedia.BootOnce 1"
+  delegate_to: localhost
+
+- name: Set boot order
+  ansible.builtin.command: "{{ idracadm }} set idrac.ServerBoot.FirstBootDevice VCD-DVD"
+  delegate_to: localhost
+
+- name: Powercycle host
+  ansible.builtin.command: "{{ idracadm }} serveraction powercycle"
+  delegate_to: localhost

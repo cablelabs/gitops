@@ -1,0 +1,58 @@
+---
+- name: Configure common BIOS on iDRAC
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: PowerOff Server
+      community.general.redfish_command:
+        baseuri: "{{ bmc_host }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        category: "Systems"
+        command: "PowerForceOff"
+      delegate_to: localhost
+
+    - name: Configure generic attributes for the bios
+      dellemc.openmanage.idrac_bios:
+        idrac_ip: "{{ bmc_host }}"
+        bmc_user: "{{ bmc_user }}"
+        bmc_password: "{{ bmc_password }}"
+        attributes:
+          BootMode: "Uefi"
+          OneTimeBootMode: "Enabled"
+          BootSeqRetry: "Enabled"
+      delegate_to: localhost
+
+    - name: Configure iDRAC network settings
+      dellemc.openmanage.idrac_network:
+        idrac_ip: "{{ bmc_host }}"
+        bmc_user: "{{ bmc_user }}"
+        bmc_password: "{{ bmc_password }}"
+        static_dns_1: "{{ dns_server1 }}"
+        share_name: "/tmp"
+      delegate_to: localhost
+
+    - name: Enable NTP and set NTP server and Time zone attributes in iDRAC
+      community.general.idrac_redfish_config:
+        category: Manager
+        command: SetManagerAttributes
+        resource_id: iDRAC.Embedded.1
+        manager_attributes:
+          NTPConfigGroup.1.NTPEnable: "Enabled"
+          NTPConfigGroup.1.NTP1: "{{ ntpserver1 }}"
+          NTPConfigGroup.1.NTP2: "{{ ntpserver2 }}"
+          Time.1.Timezone: "{{ ntptimezone }}"
+        baseuri: "{{ bmc_host }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+      delegate_to: localhost
+
+    - name: PowerOn Server
+      community.general.redfish_command:
+        baseuri: "{{ bmc_host }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        category: "Systems"
+        command: "PowerOn"
+      delegate_to: localhost

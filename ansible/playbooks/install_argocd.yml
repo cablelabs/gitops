@@ -1,0 +1,9 @@
+---
+- name: Install ArgoCD
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Install ArgoCD
+      include_role:
+        name: ../roles/argocd

@@ -1,0 +1,4 @@
+resources:
+  - nvidia-gpu-operator-namespace.yaml
+  - nvidia-gpu-operatorgroup.yaml
+  - nvidia-gpu-sub.yaml

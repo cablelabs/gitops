@@ -1,0 +1,59 @@
+---
+- name: PowerOff Server
+  community.general.redfish_command:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Systems"
+    command: "PowerForceOff"
+  delegate_to: localhost
+
+- name: Wait 15 seconds for server to power off
+  pause:
+    seconds: 15
+
+- name: Set iDRAC virtual media attach attribute to attached
+  community.general.idrac_redfish_config:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Manager"
+    command: "SetManagerAttributes"
+    manager_attributes:
+      VirtualMedia.1.Attached: "Attached"
+  delegate_to: localhost
+
+- name: Insert Virtual Media
+  community.general.redfish_command:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Manager"
+    command: "VirtualMediaInsert"
+    virtual_media:
+      image_url: "{{ utility_http_scheme }}://{{ utility_host }}:{{ utility_http_port }}/{{ cluster_name }}/boot-isos/rhcos_install-{{ inventory_hostname_short }}.iso"
+      media_types:
+        - CD
+        - DVD
+  delegate_to: localhost
+
+- name: Set One-time Boot to Virtual Media
+  community.general.idrac_redfish_config:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Manager"
+    command: "SetManagerAttributes"
+    manager_attributes:
+      ServerBoot.1.BootOnce: "Enabled"
+      ServerBoot.1.FirstBootDevice: "VCD-DVD"
+  delegate_to: localhost
+
+- name: PowerOn server to boot from virtual media (PowerForceRestart doesn't work if the power is off like it should)
+  community.general.redfish_command:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Systems"
+    command: "PowerOn"
+  delegate_to: localhost

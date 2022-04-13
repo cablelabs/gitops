@@ -1,0 +1,48 @@
+---
+- name: Configure common BIOS on Inspur
+  hosts: all
+  gather_facts: false
+  vars:
+    ism:
+      host: "{{ bmc_host }}"
+      username: "{{ bmc_user }}"
+      password: "{{ bmc_password }}"
+
+  tasks:
+    - name: PowerOff Server
+      community.general.redfish_command:
+        baseuri: "{{ bmc_host }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        category: "Systems"
+        command: "PowerForceOff"
+      delegate_to: localhost
+      when: pm_type == "inspur"
+
+    - name: "Set bios boot option"
+      inspur.sm.edit_boot_option:
+        device: "HDD"
+        effective: "Continuous"
+        mode: "UEFI"
+        provider: "{{ ism }}"
+      delegate_to: localhost
+      when: pm_type == "inspur"
+
+    - name: Enable NTP and set NTP server and Time zone attributes in iDRAC
+      inspur.sm.edit_ntp:
+        auto_date: "enable"
+        server1: "{{ ntpserver1 }}"
+        server2: "{{ ntpserver2 }}"
+        time_zone: '-7'
+      delegate_to: localhost
+      when: pm_type == "inspur"
+
+    - name: PowerOn Server
+      community.general.redfish_command:
+        baseuri: "{{ bmc_host }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        category: "Systems"
+        command: "PowerOn"
+      delegate_to: localhost
+      when: pm_type == "inspur"

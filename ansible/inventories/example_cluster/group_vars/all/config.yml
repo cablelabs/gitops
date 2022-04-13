@@ -1,0 +1,70 @@
+---
+# Cluster Variables
+cluster_name: example
+base_domain: yourdomain.com
+fips_mode: false
+
+# Locations for Cluster Deploy Playbook
+base_dir: /home/ansible/
+bin_dir: "{{ base_dir }}/{{ cluster_name }}-bin"
+build_dir: "{{ base_dir }}/{{ cluster_name }}-build"
+web_root: /home/www/html
+
+# Ignition subpath in http server (optional, defaults to nothing)
+webserver_ignition_path: "{{ cluster_name }}/ignition"
+
+# Cluster Networking
+cluster_network_cidr: 172.16.0.0/14
+cluster_network_host_prefix: 23
+network_type: OVNKubernetes
+service_network: 172.30.0.0/16
+
+# Network Settings
+gateway: 192.168.1.1
+netmask: 255.255.255.0
+interface: ens1f0
+ntpserver1: ntp1.yourdomain.com
+ntpserver2: ntp2.yourdomain.com
+ntptimezone: UTC
+dns_server1: 8.8.8.8
+dns_server2: 8.8.4.4
+
+# Utility host settings
+utility_host_packages:
+  - httpd
+  - tmux
+  - git
+  - genisoimage
+  - xorriso
+  - podman
+  - syslinux
+utility_host_services:
+  - httpd
+utility_host: 192.168.1.1
+utility_http_scheme: http
+utility_http_port: 80
+utility_host_container_runtime: podman
+
+# Shared Web Server
+webserver_url: 192.168.1.1
+webserver_port: 80
+
+# Drive to install RHCOS
+install_drive: sda
+
+# Default arch x86_64 or ppc64le
+arch: "x86_64"
+boot_timeout: 10
+
+ocp_version: 4.8.2
+iso_checksum: d0119be4eb46c793c2a33e261c959333f55ba21b6529278b1128eacb14a21ec5
+iso_name: rhcos-{{ ocp_version }}-x86_64-live.x86_64.iso
+rhcos_bios: rhcos-{{ ocp_version }}-x86_64-metal.x86_64.raw.gz
+
+# Openshift Sources
+source_urls:
+  installer: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.8/openshift-install-linux.tar.gz
+  client: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.8/openshift-client-linux.tar.gz
+  rhcos_kernel: https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.8/latest/rhcos-live-kernel-x86_64
+  rhcos_initrd: https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.8/latest/rhcos-live-initramfs.x86_64.img
+  rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/latest/rhcos-live-rootfs.x86_64.img

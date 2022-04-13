@@ -1,0 +1,5 @@
+resources:
+  - sriov-operator-subscription.yml
+  - sriov-operator-config.yml
+  - unsupported-nic-config.yml
+  - sriov-mcp.yaml

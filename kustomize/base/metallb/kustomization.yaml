@@ -1,0 +1,20 @@
+namespace: metallb-system
+
+resources:
+  - github.com/metallb/metallb/manifests?ref=v0.11
+  # Add config.yaml in the cluster implementation
+  # - config.yaml
+  - secret.yaml
+  - clusterrole.yaml
+  - rolebinding.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: controller
+      namespace: metallb-system
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/securityContext/runAsUser
+      - op: remove
+        path: /spec/template/spec/securityContext/fsGroup

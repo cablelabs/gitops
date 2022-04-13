@@ -1,0 +1,9 @@
+---
+- name: Disconnect Virtual Media
+  community.general.hpilo_boot:
+    host: "{{ bmc_host }}"
+    login: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    state: disconnect
+  delegate_to: localhost
+  ignore_errors: true

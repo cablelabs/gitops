@@ -1,0 +1,5 @@
+# Elastic Search Operator installed during cluster logging configuration
+resources:
+  - jaeger-subscription.yml
+  - kiali-subscription.yml
+  - service-mesh-subscription.yml

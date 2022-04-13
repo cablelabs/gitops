@@ -1,0 +1,16 @@
+---
+# This is used to enable the SRIOV Operator recognize and use unsupported SRIOV NICs
+# Supported SRIOV NICs https://github.com/openshift/sriov-network-operator/blob/release-4.7/api/v1/helper.go
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unsupported-nic-ids
+  namespace: openshift-sriov-network-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+data:
+  # Vendor ID, PF Device ID, VF Device ID
+  # Ethernet 10G 2P X550-t Adapter
+  X550: "8086 1563 1565"
+  # Nvidia_mlx5_ConnectX-6_Dx
+  mlx5: "15b3 101d 101e"

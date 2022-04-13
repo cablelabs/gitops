@@ -1,2 +1,10 @@
 # gitops
-Example automation for using GitOps and other automation to deploying and running bare metal Kubernetes for cable and telecommunications workloads.
+Example automation for managing and deploying a bare metal Kubernetes for cable and telecommunications workloads.
+
+## Ansible
+
+Ansible is used to provision the bare metal cluster then install ArgoCD for ongoing CI/CD operations.
+
+## Kustomize
+
+Kustomize is used as the configuratuon management solution for continued cluster operations. These artifacts are deployed via ArgoCD in a CI/CD pipeline.

@@ -1,0 +1,4 @@
+resources:
+  - 00-worker-macvlan.yml
+  - macvlan-namespace.yaml
+  - macvlan-network-attachment.yml
