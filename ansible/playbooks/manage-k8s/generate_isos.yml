@@ -1,0 +1,189 @@
+---
+- name: Playbook to recreate the RHCOS ISO
+  hosts: master,worker,bootstrap
+  gather_facts: false
+
+  tasks:
+    - name: Download and prep upstream ISO
+      block:
+        - name: Create the download url for ppc64le
+          set_fact:
+            dl_url: 'https://mirror.openshift.com/pub/openshift-v{{ ocp_version.split(".")[0] }}/ppc64le/dependencies/rhcos/{{ ocp_version.split(".")[0] }}.{{ ocp_version.split(".")[1] }}/{{ ocp_version }}/{{ iso_name_ppc64 }}'
+            my_iso: "{{ iso_name_ppc64 }}"
+            my_cksum: "{{ iso_checksum_ppc64 }}"
+          run_once: true
+          when: arch == 'ppc64le'
+
+        - name: Create the download url for x86_64
+          set_fact:
+            dl_url: 'https://mirror.openshift.com/pub/openshift-v{{ ocp_version.split(".")[0] }}/dependencies/rhcos/{{ ocp_version.split(".")[0] }}.{{ ocp_version.split(".")[1] }}/{{ ocp_version }}/{{ iso_name }}'
+            my_iso: "{{ iso_name }}"
+            my_cksum: "{{ iso_checksum }}"
+          run_once: true
+          when: arch == 'x86_64'
+
+        - name: Check if ISO is already available
+          stat:
+            path: /tmp/{{ my_iso }}
+            checksum_algorithm: sha256
+            get_checksum: true
+          run_once: true
+          delegate_to: localhost
+          register: iso_file
+
+        - name: Get the original ISO
+          get_url:
+            url: "{{ dl_url }}"
+            dest: /tmp
+            checksum: sha256:{{ my_cksum }}
+          run_once: true
+          delegate_to: localhost
+          when: not iso_file.stat.exists or iso_file.stat.checksum != my_cksum
+
+        - name: Mount ISO
+          mount:
+            src: /tmp/{{ my_iso }}
+            path: /mnt/iso
+            fstype: iso9660
+            opts: ro,noauto
+            state: mounted
+          run_once: true
+          delegate_to: localhost
+          become: true
+
+        - name: Copy contents of iso to local directory
+          ansible.builtin.command: rsync -ac /mnt/iso/ /tmp/rhcos-iso
+          run_once: true
+          delegate_to: localhost
+          become: true
+
+        - name: Create directory structure to place isos
+          ansible.builtin.file:
+            path: "{{ web_root }}/{{ cluster_name }}/boot-isos"
+            state: directory
+            mode: '0755'
+          delegate_to: localhost
+          become: true
+
+- name: Create the required ISOs
+  hosts: bootstrap,master,worker
+  serial: 1
+  gather_facts: false
+
+  tasks:
+
+    # Setting the driver order of the storage controllers for consistent disk naming
+    - name: Build our additional variables
+      set_fact:
+        cmd_args: "rd.driver.pre=ahci rd.driver.post=mpt3sas"
+
+    - name: Add ip with dhcp config
+      set_fact:
+        cmd_args: "{{ cmd_args }} ip=dhcp"
+      when: dhcp is defined and dhcp
+
+    - name: Add ip address info
+      set_fact:
+        cmd_args: "{{ cmd_args }} ip={{ ipv4 }}::{{ gateway }}:{{ netmask }}:{{ inventory_hostname }}:{{ interface }}:none"
+      when: dhcp is not defined or not dhcp
+
+    - name: Add install DNS
+      set_fact:
+        cmd_args: "{{ cmd_args }} nameserver={{ item }}"
+      with_items:
+        - "{{ dns_server1 }}"
+        - "{{ dns_server2 }}"
+      when: (dns_server1 is defined) and ((dhcp is not defined) or not dhcp)
+
+    - name: Add ip address info for second NIC
+      set_fact:
+        cmd_args: "{{ cmd_args }} ip={{ nic2_ipv4 }}::{{ gateway2 }}:{{ netmask2 }}:{{ inventory_hostname }}:{{ interface2 }}:none"
+      when: nic2_ipv4 is defined and (not (dhcp | default(false)))
+
+    - name: Add install device name
+      set_fact:
+        cmd_args: "{{ cmd_args }} coreos.inst.install_dev={{ install_drive | default(sda) }}"
+
+    - name: Add custom location of ignition files
+      set_fact:
+        webserver_ignition_fullpath: "/{{ webserver_ignition_path }}/"
+      when: webserver_ignition_path is defined
+
+    - name: Add default location of ignition files
+      set_fact:
+        webserver_ignition_fullpath: "/"
+      when: webserver_ignition_path is not defined
+
+    - name: set_fact for worker node
+      set_fact:
+        ign_file: worker
+      when: "'worker' in group_names"
+
+    - name: set_fact for bootstrap node
+      set_fact:
+        ign_file: bootstrap
+      when: "'bootstrap' in group_names"
+
+    - name: set_fact for master node
+      set_fact:
+        ign_file: master
+      when: "'master' in group_names"
+
+    - name: set_fact for gapworker node
+      set_fact:
+        ign_file: worker
+      when: "'gapworker' in group_names"
+
+    - name: Add ignition_url
+      set_fact:
+        cmd_args: "{{ cmd_args }} coreos.inst.ignition_url=http://{{ webserver_url }}:{{ webserver_port | default(80) }}{{ webserver_ignition_fullpath }}{{ ign_file }}.ign"
+
+    - block:
+        - name: Replace the isolinux.cfg file
+          template:
+            src: isolinux.cfg-multi.j2
+            dest: /tmp/rhcos-iso/isolinux/isolinux.cfg
+            mode: 0664
+          become: true
+          delegate_to: localhost
+
+        - name: Replace the grub.cfg file
+          template:
+            src: grub.cfg-multi.j2
+            dest: /tmp/rhcos-iso/EFI/redhat/grub.cfg
+            mode: 0664
+          become: true
+          delegate_to: localhost
+
+        - name: Create new ISO image for x86_64
+          command: >
+              /usr/bin/mkisofs -U -A 'RHCOS-CustomIso' -V 'RHCOS-CustomIso' -volset 'RHCOS-CustomIso' -J -joliet-long -r -v -T
+                -x ./lost+found -o {{ web_root }}/{{ cluster_name }}/boot-isos/rhcos_install-{{ inventory_hostname_short }}.iso -b isolinux/isolinux.bin
+                -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e images/efiboot.img
+                -no-emul-boot .
+          args:
+            chdir: /tmp/rhcos-iso/
+          become: true
+          delegate_to: localhost
+      when: arch == 'x86_64'
+
+- name: Cleanup tasks
+  hosts: bootstrap,master,worker
+  gather_facts: false
+
+  tasks:
+
+    - block:
+        - name: Unmount ISO
+          mount:
+            path: /mnt/iso
+            state: absent
+
+        - name: Remove ISO copy
+          file:
+            path: /tmp/rhcos-iso
+            state: absent
+      become: true
+      run_once: true
+      delegate_to: localhost
+...

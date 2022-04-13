@@ -1,0 +1,12 @@
+- name: Eject ISO
+  community.general.redfish_command:
+    category: Manager
+    command: VirtualMediaEject
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    virtual_media:
+      image_url: "{{ utility_http_scheme }}://{{ utility_host }}:{{ utility_http_port }}/{{ cluster_name }}/boot-isos/rhcos_install-{{ inventory_hostname_short }}.iso"
+    resource_id: "iDRAC.Embedded.1"
+  delegate_to: localhost
+  ignore_errors: true

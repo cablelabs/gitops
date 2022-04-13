@@ -1,0 +1,18 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfigPool
+metadata:
+  name: worker-sriov
+  labels:
+    pools.operator.machineconfiguration.openshift.io/worker-sriov: ''
+    machineconfiguration.openshift.io/mco-built-in: ''
+spec:
+  machineConfigSelector:
+    matchExpressions:
+      - key: machineconfiguration.openshift.io/role
+        operator: In
+        values:
+          - worker
+          - worker-sriov
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/worker-sriov: ''

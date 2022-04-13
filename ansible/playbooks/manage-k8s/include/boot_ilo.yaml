@@ -1,0 +1,29 @@
+---
+- name: Make sure python-hpilo is installed
+  pip:
+    name: python-hpilo
+  delegate_to: localhost
+
+- name: PowerOff Server
+  community.general.redfish_command:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Systems"
+    command: "PowerForceOff"
+  delegate_to: localhost
+
+- name: Wait 10 seconds for server to power off
+  pause:
+    seconds: 10
+
+- name: Insert Virtual Media
+  community.general.hpilo_boot:
+    host: "{{ bmc_host }}"
+    login: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    media: cdrom
+    image: "{{ utility_http_scheme }}://{{ utility_host }}:{{ utility_http_port }}/{{ cluster_name }}/boot-isos/rhcos_install-{{ inventory_hostname_short }}.iso"
+    state: boot_once
+    force: yes
+  delegate_to: localhost

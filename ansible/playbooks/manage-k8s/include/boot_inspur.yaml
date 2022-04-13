@@ -1,0 +1,72 @@
+- name: Make sure SDK is Installed
+  pip:
+    name: inspursmsdk
+    state: present
+  delegate_to: localhost
+
+- name: PowerOff Server
+  community.general.redfish_command:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Systems"
+    command: "PowerForceOff"
+  delegate_to: localhost
+
+- name: Wait 10 seconds for server to power off
+  pause:
+    seconds: 10
+
+- name: set ism provider
+  set_fact:
+    ism:
+      host: "{{ bmc_host }}"
+      username: "{{ bmc_user }}"
+      password: "{{ bmc_password }}"
+
+- name: Set local media
+  inspur.sm.edit_virtual_media:
+    local_media_support: "Enable"
+    provider: "{{ ism }}"
+  delegate_to: localhost
+
+- name: Set remote media
+  inspur.sm.edit_virtual_media:
+    remote_media_support: "Enable"
+    mount_type: "CD"
+    mount: "Enable"
+    remote_server_address: "{{ utility_host }}"
+    #remote_source_path: "{{ web_root }}/{{ cluster_name }}/boot-isos/rhcos_install-{{ inventory_hostname_short }}.iso"
+    remote_source_path: "{{ web_root }}/{{ cluster_name }}/boot-isos/"
+    #remote_source_path: "{{ cluster_name }}"
+    remote_share_type: "nfs"
+    #remote_domain_name: "{{ cluster_name }}"
+    #remote_user_name: "{{ samba_user }}"
+    #remote_password: "{{ samba_password }}"
+    provider: "{{ ism }}"
+  delegate_to: localhost
+
+- name: Connect Virtual Media
+  inspur.sm.edit_connect_media:
+    image_type: "CD"
+    op_type: "start"
+    image_name: "rhcos_install-{{ inventory_hostname_short }}.iso"
+    provider: "{{ ism }}"
+  delegate_to: localhost
+
+- name: "Set bios boot option"
+  inspur.sm.edit_boot_option:
+    device: "CD"
+    effective: "Once"
+    mode: "UEFI"
+    provider: "{{ ism }}"
+  delegate_to: localhost
+
+- name: PowerOn Server
+  community.general.redfish_command:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Systems"
+    command: "PowerOn"
+  delegate_to: localhost

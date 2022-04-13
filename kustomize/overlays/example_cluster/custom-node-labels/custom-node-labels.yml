@@ -1,0 +1,30 @@
+---
+kind: Node
+apiVersion: v1
+metadata:
+  name: worker-0.example.yourdomain.com
+  labels:
+    node-role.kubernetes.io/worker-sriov: ''
+    feature.node.kubernetes.io/network-sriov.capable: 'true'
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+---
+kind: Node
+apiVersion: v1
+metadata:
+  name: worker-1.example.yourdomain.com
+  labels:
+    node-role.kubernetes.io/worker-sriov: ''
+    feature.node.kubernetes.io/network-sriov.capable: 'true'
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+---
+kind: Node
+apiVersion: v1
+metadata:
+  name: worker-2.example.yourdomain.com
+  labels:
+    node-role.kubernetes.io/worker-sriov: ''
+    feature.node.kubernetes.io/network-sriov.capable: 'true'
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"

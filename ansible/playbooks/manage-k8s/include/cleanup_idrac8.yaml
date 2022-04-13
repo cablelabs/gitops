@@ -1,0 +1,8 @@
+- name: set_fact idrac command
+  ansible.builtin.set_fact:
+    idracadm: "/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r {{ bmc_host }} -u {{ bmc_user }} -p {{ bmc_password }}"
+
+- name: Disconnect Virtual Media
+  ansible.builtin.command: "{{ idracadm }} remoteimage -d"
+  delegate_to: localhost
+  ignore_errors: true

@@ -1,0 +1,142 @@
+---
+- hosts: utility
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Clean up old bin directory
+      file:
+        path: "{{ bin_dir }}"
+        state: absent
+
+    - name: Create local bin directory for openshift installer
+      file:
+        dest: "{{ bin_dir }}"
+        state: directory
+        mode: 0775
+
+    - name: Fetch openshift-install binary
+      get_url:
+        url: "{{ source_urls['installer'] }}"
+        dest: "{{ build_dir }}/openshift-install-linux.tar.gz"
+
+    - name: Fetch openshift client binaries
+      get_url:
+        url: "{{ source_urls['client'] }}"
+        dest: "{{ build_dir }}/openshift-client-linux.tar.gz"
+
+    - name: Extract openshift-install
+      unarchive:
+        creates: "{{ bin_dir }}/openshift-install"
+        dest: "{{ bin_dir }}"
+        exclude: README.md
+        remote_src: true
+        src: "{{ build_dir }}/openshift-install-linux.tar.gz"
+
+    - name: Extract openshift clients
+      unarchive:
+        creates: "{{ bin_dir }}/oc"
+        dest: "{{ bin_dir }}"
+        exclude: README.md
+        remote_src: true
+        src: "{{ build_dir }}/openshift-client-linux.tar.gz"
+
+    - name: Clean up old install directory when reprovisioning
+      file:
+        path: "{{ base_dir }}/{{ cluster_name }}-install"
+        state: absent
+
+    - name: Create installation config directory
+      file:
+        path: "{{ base_dir }}/{{ cluster_name }}-install"
+        state: directory
+        mode: 0775
+
+    - name: Create install-config.yaml
+      template:
+        src: install-config.yaml.j2
+        dest: "{{ base_dir }}/{{ cluster_name }}-install/install-config.yaml"
+        mode: 0664
+
+    - name: Create cluster webroot
+      file:
+        path: "{{ web_root }}/{{ cluster_name }}"
+        state: directory
+        owner: apache
+        group: apache
+        mode: 0775
+      become: true
+
+    - name: Create manifests
+      shell: "{{ bin_dir }}/openshift-install --dir={{ base_dir }}/{{ cluster_name }}-install create manifests"
+
+    - name: Copy over custom manifests.
+      copy:
+        src: "{{ item }}"
+        dest: "{{ base_dir }}/{{ cluster_name }}-install/manifests/{{ item }}"
+        mode: 0664
+      loop: "{{ custom_manifests }}"
+
+    - name: Set masters to unschedulable
+      shell: "sed -i s/true/false/ {{ base_dir }}/{{ cluster_name }}-install/manifests/cluster-scheduler-02-config.yml"
+
+    - name: Create base ignition configs
+      shell: "{{ bin_dir }}/openshift-install --dir={{ base_dir }}/{{ cluster_name }}-install create ignition-configs"
+
+    - name: Create ignition directory
+      file:
+        path: "{{ web_root }}/{{ cluster_name }}/ignition"
+        state: directory
+        owner: apache
+        group: apache
+        mode: 0775
+      become: true
+
+    - name: Copy ignition files
+      shell: "cp {{ base_dir }}/{{ cluster_name }}-install/*.ign {{ web_root }}/{{ cluster_name }}/ignition && chown apache:apache {{ web_root }}/{{ cluster_name }}/ignition/*.ign"
+      become: true
+
+- hosts: bootstrap:master
+  gather_facts: false
+  any_errors_fatal: true
+  tasks:
+    - name: Boot nodes
+      include_tasks: "include/boot_{{ pm_type }}.yaml"
+
+- hosts: utility
+  gather_facts: false
+  tasks:
+    - name: Wait for bootstrap, this can take 30-45 minutes. The servers will reboot during the bootstrap-process.
+      shell: "{{ bin_dir }}/openshift-install --dir={{ base_dir }}/{{ cluster_name }}-install wait-for bootstrap-complete"
+      register: result
+      until: result.rc == 0
+      retries: 3
+      delay: 10
+
+- hosts: bootstrap:master
+  gather_facts: false
+  tasks:
+    - name: Do post-install node cleanup IE remove Virtual Media mount
+      include_tasks: "include/cleanup_{{ pm_type }}.yaml"
+
+- hosts: bootstrap
+  gather_facts: false
+  tasks:
+    - name: Power off bootstrap node
+      community.general.redfish_command:
+        baseuri: "{{ bmc_host }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        category: Systems
+        command: PowerForceOff
+      delegate_to: localhost
+
+- hosts: utility
+  gather_facts: false
+  tasks:
+    - name: Go stand up a worker node now.
+      ansible.builtin.debug:
+        msg:
+          - "Please run the add_node playbook to provision worker nodes to complete the cluster install process."
+          - "You can monitor the install process from the utility node with the below command as you add worker nodes."
+          - "{{ bin_dir }}/openshift-install --dir={{ base_dir }}/{{ cluster_name }}-install wait-for install-complete"

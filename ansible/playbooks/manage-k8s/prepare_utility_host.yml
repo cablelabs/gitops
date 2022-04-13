@@ -1,0 +1,17 @@
+---
+- hosts: utility
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Install utility host packages
+      package:
+        name: "{{ item }}"
+        state: installed
+      with_items: "{{ utility_host_packages }}"
+
+    - name: Enable and start utility host services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      with_items: "{{ utility_host_services }}"

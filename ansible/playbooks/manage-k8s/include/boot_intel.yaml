@@ -1,0 +1,26 @@
+- name: PowerOff Server
+  community.general.redfish_command:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Systems"
+    command: "PowerForceOff"
+  delegate_to: localhost
+
+- name: Wait 10 seconds for server to power off
+  pause:
+    seconds: 10
+
+- name: Mount virtual media
+  ansible.builtin.command:
+    cmd: "/bin/SDPTool {{ bmc_host }} {{ bmc_user }} {{ bmc_password }} vmedia smb://{{ samba_user }}:{{ samba_password }}@{{ utility_host }}/{{ cluster_name }}/rhcos_install-{{ inventory_hostname_short }}.iso"
+  delegate_to: localhost
+
+- name: PowerOn Server
+  community.general.redfish_command:
+    baseuri: "{{ bmc_host }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    category: "Systems"
+    command: "PowerOn"
+  delegate_to: localhost
