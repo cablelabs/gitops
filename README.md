@@ -7,4 +7,4 @@ Ansible is used to provision the bare metal cluster then install ArgoCD for ongo
 
 ## Kustomize
 
-Kustomize is used as the configuratuon management solution for continued cluster operations. These artifacts are deployed via ArgoCD in a CI/CD pipeline.
+Kustomize is used as the configuration management solution for continued cluster operations. These artifacts are deployed via ArgoCD in a CI/CD pipeline.
