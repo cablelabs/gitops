@@ -61,7 +61,7 @@ iso_checksum: d0119be4eb46c793c2a33e261c959333f55ba21b6529278b1128eacb14a21ec5
 iso_name: rhcos-{{ ocp_version }}-x86_64-live.x86_64.iso
 rhcos_bios: rhcos-{{ ocp_version }}-x86_64-metal.x86_64.raw.gz
 
-# Openshift Sources
+# OpenShift Sources
 source_urls:
   installer: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.8/openshift-install-linux.tar.gz
   client: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.8/openshift-client-linux.tar.gz
