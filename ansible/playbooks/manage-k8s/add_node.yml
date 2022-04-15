@@ -1,0 +1,48 @@
+---
+- hosts: openshift_nodes
+  gather_facts: false
+  serial: 1
+  tasks:
+    - name: Boot nodes
+      include_tasks: "include/boot_{{ pm_type }}.yaml"
+
+    - name: wait for reboot
+      wait_for:
+        port: 22
+        host: "{{ inventory_hostname }}"
+        search_regex: OpenSSH
+        delay: 600
+        timeout: 1800
+        connect_timeout: 15
+      connection: local
+
+    - name: Umount virtual media
+      include_tasks: "include/cleanup_{{ pm_type }}.yaml"
+
+    - name: set kubeconfig
+      set_fact:
+        kubeconfig_location: "{{ base_dir }}/{{ cluster_name }}-install/auth/kubeconfig"
+
+    - name: wait for worker to show up as Pending csr
+      shell: "{{ bin_dir }}/oc get csr --kubeconfig {{ kubeconfig_location }} | grep Pending"
+      register: csr_status
+      until: csr_status.stdout.find("Pending") != -1
+      retries: 90
+      delay: 15
+      delegate_to: localhost
+
+    - name: approve pending csr
+      shell: "{{ bin_dir }}/oc get csr -ojson --kubeconfig {{ kubeconfig_location }} | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs {{ bin_dir }}/oc adm certificate approve  --kubeconfig {{ kubeconfig_location }}"
+      delegate_to: localhost
+
+    - name: wait for worker to show up as Pending csr for the second time
+      shell: "{{ bin_dir }}/oc get csr --kubeconfig {{ kubeconfig_location }} | grep Pending"
+      register: csr_status
+      until: csr_status.stdout.find("Pending") != -1
+      retries: 90
+      delay: 15
+      delegate_to: localhost
+
+    - name: approve second pending csr
+      shell: "{{ bin_dir }}/oc get csr -ojson --kubeconfig {{ kubeconfig_location }} | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs {{ bin_dir }}/oc adm certificate approve  --kubeconfig {{ kubeconfig_location }}"
+      delegate_to: localhost

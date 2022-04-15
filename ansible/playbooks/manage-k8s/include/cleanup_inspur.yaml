@@ -1,0 +1,14 @@
+- name: set ism provider
+  set_fact:
+    ism:
+      host: "{{ bmc_host }}"
+      username: "{{ bmc_user }}"
+      password: "{{ bmc_password }}"
+
+- name: Connect Virtual Media
+  inspur.sm.edit_connect_media:
+    image_type: "CD"
+    op_type: "stop"
+    image_name: "rhcos_install-{{ inventory_hostname_short }}.iso"
+    provider: "{{ ism }}"
+  delegate_to: localhost

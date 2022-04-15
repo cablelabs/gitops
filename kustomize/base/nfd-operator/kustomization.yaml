@@ -1,0 +1,4 @@
+resources:
+  - nfd-namespace.yaml
+  - nfd-operatorgroup.yaml
+  - nfd-sub.yaml

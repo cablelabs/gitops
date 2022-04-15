@@ -1,0 +1,9 @@
+generatorOptions:
+  disableNameSuffixHash: true
+secretGenerator:
+  - name: alertmanager-main
+    namespace: openshift-monitoring
+    files:
+      - "alertmanager.yaml"
+resources:
+  - cluster-monitoring-config.yaml

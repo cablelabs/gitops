@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{ cluster_name }}
+  namespace: openshift-gitops
+spec:
+  generators:
+    - git:
+        repoURL: {{ argocd_git_repo }}
+        revision: HEAD
+        directories:
+          - path: {{ argocd_repo_path }}
+  template:
+    metadata:
+      name: '{{ '{{' }} path.basename {{ '}}' }}'
+    spec:
+      project: default
+      source:
+        repoURL: {{ argocd_git_repo }}
+        targetRevision: HEAD
+        path: '{{ '{{' }} path {{ '}}' }}'
+      syncPolicy:
+        automated: {}
+      destination:
+        namespace: openshift-gitops
+        server: "https://kubernetes.default.svc"

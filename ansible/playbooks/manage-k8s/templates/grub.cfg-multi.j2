@@ -1,0 +1,26 @@
+# This file is copied from
+# https://github.com/coreos/fedora-coreos-config
+set timeout={{ boot_timeout }}
+set default=1
+
+function load_video {
+  insmod efi_gop
+  insmod efi_uga
+  insmod video_bochs
+  insmod video_cirrus
+  insmod all_video
+}
+
+load_video
+set gfxpayload=keep
+insmod gzio
+insmod part_gpt
+insmod ext2
+
+### END /etc/grub.d/00_header ###
+
+### BEGIN /etc/grub.d/10_linux ###
+menuentry 'Install RHEL CoreOS {{ inventory_hostname_short }}' --class fedora --class gnu-linux --class gnu --class os {
+	linux /images/pxeboot/vmlinuz random.trust_cpu=on rd.luks.options=discard coreos.liveiso=RHCOS-CustomIso ignition.firstboot ignition.platform.id=metal {{ cmd_args }}
+	initrd /images/pxeboot/initrd.img /images/ignition.img
+}

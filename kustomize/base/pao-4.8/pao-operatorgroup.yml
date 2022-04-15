@@ -1,0 +1,8 @@
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: openshift-performance-addon-operator
+  namespace: openshift-performance-addon-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"

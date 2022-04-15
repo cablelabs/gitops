@@ -1,0 +1,5 @@
+- name: Eject virtual media
+  ansible.builtin.command:
+    cmd: "/bin/SDPTool {{ bmc_host }} {{ bmc_user }} {{ bmc_password }} unmount"
+  delegate_to: localhost
+  ignore_errors: true

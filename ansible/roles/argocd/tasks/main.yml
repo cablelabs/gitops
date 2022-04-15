@@ -1,0 +1,51 @@
+---
+- name: Ensurce directory exists for kubeconfig
+  file:
+    path: "{{ base_dir }}/{{ cluster_name }}-install/auth"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+
+- name: copy kubeconfig template over to auth directory
+  ansible.builtin.template:
+    src: kubeconfig.j2
+    dest: "{{ base_dir }}/{{ cluster_name }}-install/auth/kubeconfig"
+    owner: root
+    group: root
+    mode: '0640'
+
+- name: make sure require pip packages are install
+  pip:
+    name:
+      - kubernetes
+      - pyyaml
+      - jsonpatch
+
+- name: Create gitops subscription
+  kubernetes.core.k8s:
+    state: present
+    src: gitops-subscription.yaml
+    kubeconfig: "{{ base_dir }}/{{ cluster_name }}-install/auth/kubeconfig"
+
+- name: pause 3 minutes for git-ops subscription to install
+  pause:
+    minutes: 3
+
+- name: Create repo secret
+  kubernetes.core.k8s:
+    state: present
+    template: hef-repo-secret.j2
+    kubeconfig: "{{ base_dir }}/{{ cluster_name }}-install/auth/kubeconfig"
+
+- name: Create cluster role binding
+  kubernetes.core.k8s:
+    state: present
+    src: clusterrolebinding-sa.yaml
+    kubeconfig: "{{ base_dir }}/{{ cluster_name }}-install/auth/kubeconfig"
+
+- name: Add in application set
+  kubernetes.core.k8s:
+    state: present
+    template: application-set.j2
+    kubeconfig: "{{ base_dir }}/{{ cluster_name }}-install/auth/kubeconfig"

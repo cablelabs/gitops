@@ -1,0 +1,26 @@
+apiVersion: imageregistry.operator.openshift.io/v1
+kind: Config
+metadata:
+  finalizers:
+    - imageregistry.operator.openshift.io/finalizer
+  name: cluster
+  namespace: openshift-image-registry
+spec:
+  logLevel: Normal
+  rolloutStrategy: RollingUpdate
+  operatorLogLevel: Normal
+  requests:
+    read:
+      maxWaitInQueue: 0s
+    write:
+      maxWaitInQueue: 0s
+  defaultRoute: true
+  observedConfig: null
+  managementState: Managed
+  proxy: {}
+  unsupportedConfigOverrides: null
+  storage:
+    managementState: Unmanaged
+    pvc:
+      claim: ocs4registry-pv-claim
+  replicas: 3

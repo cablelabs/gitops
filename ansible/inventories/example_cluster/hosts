@@ -1,0 +1,57 @@
+---
+all:
+  children:
+    utility:
+      hosts:
+        localhost:
+          ansible_connection: local
+    openshift_nodes:
+      children:
+        bootstrap:
+          hosts:
+            bootstrap-node.example.yourdomain.com:
+              bmc_host: 192.168.0.16
+              pm_type: idrac
+              dhcp: false
+              ipv4: 192.168.1.17
+              interface: eno1
+        master:
+          hosts:
+            controller-0.example.yourdomain.com:
+              bmc_host: 192.168.0.11
+              pm_type: idrac
+              dhcp: false
+              ipv4: 192.168.1.11
+              interface: eno1
+            controller-1.example.yourdomain.com:
+              bmc_host: 192.168.0.12
+              pm_type: idrac
+              dhcp: false
+              ipv4: 192.168.1.12
+              interface: eno1
+            controller-2.example.yourdomain.com:
+              bmc_host: 192.168.0.13
+              pm_type: idrac
+              dhcp: false
+              ipv4: 192.168.1.13
+              interface: eno1
+        worker:
+          hosts:
+            worker-0.example.yourdomain.com:
+              bmc_host: 192.168.0.14
+              pm_type: idrac
+              dhcp: false
+              ipv4: 192.168.1.14
+              interface: eno1
+            worker-1.example.yourdomain.com:
+              bmc_host: 192.168.0.15
+              pm_type: idrac
+              dhcp: false
+              ipv4: 192.168.1.15
+              interface: eno1
+            worker-2.example.yourdomain.com:
+              bmc_host: 192.168.0.16
+              pm_type: idrac
+              dhcp: false
+              ipv4: 192.168.1.16
+              interface: eno1

@@ -1,0 +1,35 @@
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: basic-sriov-policy
+  namespace: openshift-sriov-network-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  isRdma: false
+  nicSelector:
+    vendor: "15b3"
+    deviceID: "101d"
+    pfNames:
+      - "ens1f0#0-7"
+  nodeSelector:
+    feature.node.kubernetes.io/network-sriov.capable: "true"
+  numVfs: 16
+  deviceType: netdevice
+  resourceName: 'basic_eth0'
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: dpdk-sriov-policy
+  namespace: openshift-sriov-network-operator
+spec:
+  isRdma: true
+  resourceName: dpdk_eth0
+  nodeSelector:
+    feature.node.kubernetes.io/network-sriov.capable: "true"
+  numVfs: 16
+  nicSelector:
+    pfNames: ["ens1f0#8-15"]
+  deviceType: netdevice

@@ -1,0 +1,25 @@
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  name: sriov-basic-network
+  namespace: openshift-sriov-network-operator
+spec:
+  resourceName: basic_eth0
+  networkNamespace: example_namespace
+  ipam: |-
+    {
+      "type": "static",
+      "subnet": "192.168.1.0/24",
+      "gateway": "192.168.1.1"
+    }
+---
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  name: sriov-dpdk-network
+  namespace: openshift-sriov-network-operator
+spec:
+  resourceName: dpdk_eth0
+  networkNamespace: example_namespace
+  ipam: "{}"

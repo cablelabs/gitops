@@ -1,0 +1,6 @@
+bases:
+  - ../../../base/ocs-external
+
+resources:
+  - rook-external-secret.yaml
+  - storage-cluster.yaml

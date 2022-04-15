@@ -1,0 +1,5 @@
+namespace: metallb-system
+
+resources:
+  - ../../../base/metallb
+  - bgp-config.yaml
