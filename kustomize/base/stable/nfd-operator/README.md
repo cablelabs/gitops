@@ -4,4 +4,4 @@ The Node Feature Discovery Operator (NFD) manages the detection of hardware feat
 
 ## Installation
 
-Followed instructions from [Red Hat](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-node-feature-discovery-operator.html)
+Followed instructions from [Red Hat](https://docs.openshift.com/container-platform/4.10/hardware_enablement/psap-node-feature-discovery-operator.html)

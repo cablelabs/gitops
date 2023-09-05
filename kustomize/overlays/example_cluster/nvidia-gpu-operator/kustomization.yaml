@@ -1,0 +1,5 @@
+---
+resources:
+  - ../../../base/stable/nvidia-gpu-operator
+  - clusterpolicy.json
+  - private-registry-secret.yaml

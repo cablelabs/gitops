@@ -1,0 +1,4 @@
+---
+resources:
+  - ../../../base/stable/openshift-cnv
+  - kubevirt-hyperconverged-deployment.yaml

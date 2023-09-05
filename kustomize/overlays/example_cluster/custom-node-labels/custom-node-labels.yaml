@@ -6,6 +6,8 @@ metadata:
   labels:
     node-role.kubernetes.io/worker-sriov: ''
     feature.node.kubernetes.io/network-sriov.capable: 'true'
+    nvidia.com/gpu.workload.config: 'vm-vgpu'
+    nvidia.com/vgpu.config: 'L40-12Q'
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 ---
@@ -16,6 +18,8 @@ metadata:
   labels:
     node-role.kubernetes.io/worker-sriov: ''
     feature.node.kubernetes.io/network-sriov.capable: 'true'
+    nvidia.com/gpu.workload.config: 'vm-vgpu'
+    nvidia.com/vgpu.config: 'L40-12Q'
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 ---
@@ -26,5 +30,6 @@ metadata:
   labels:
     node-role.kubernetes.io/worker-sriov: ''
     feature.node.kubernetes.io/network-sriov.capable: 'true'
+    nvidia.com/gpu.workload.config: 'vm-passthrough'
   annotations:
     argocd.argoproj.io/sync-wave: "1"

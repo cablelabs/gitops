@@ -1,3 +1,4 @@
+---
 resources:
   - nfd-namespace.yaml
   - nfd-operatorgroup.yaml
