@@ -1,0 +1,4 @@
+---
+resources:
+  - ../../../base/stable/nfd-operator
+  - NodeFeatureDiscovery.yaml

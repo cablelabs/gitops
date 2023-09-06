@@ -1,0 +1,40 @@
+apiVersion: hco.kubevirt.io/v1beta1
+kind: HyperConverged
+metadata:
+  namespace: openshift-cnv
+  name: kubevirt-hyperconverged
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    deployOVS: 'false'
+spec:
+  permittedHostDevices:
+    pciHostDevices:
+      - resourceName: "nvidia.com/AD102GL_L40"
+        pciDeviceSelector: "10DE:26B5"
+        externalResourceProvider: true
+    mediatedDevices:
+      - resourceName: nvidia.com/NVIDIA_L40-12Q
+        mdevNameSelector: NVIDIA L40-12Q
+        externalResourceProvider: true
+  liveMigrationConfig:
+    bandwidthPerMigration: 512Mi
+    completionTimeoutPerGiB: 800
+    parallelMigrationsPerCluster: 5
+    parallelOutboundMigrationsPerNode: 2
+    progressTimeout: 150
+  certConfig:
+    ca:
+      duration: 48h0m0s
+      renewBefore: 24h0m0s
+    server:
+      duration: 24h0m0s
+      renewBefore: 12h0m0s
+  featureGates:
+    sriovLiveMigration: true
+    withHostPassthroughCPU: true
+    enableCommonBootImageImport: true
+  workloadUpdateStrategy:
+    batchEvictionInterval: 1m0s
+    batchEvictionSize: 10
+    workloadUpdateMethods:
+      - LiveMigrate
