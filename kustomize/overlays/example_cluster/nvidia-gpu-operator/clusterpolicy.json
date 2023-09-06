@@ -102,7 +102,7 @@
       }
     },
     "vgpuManager": {
-      "repository": "my.private.registry:4567/nvidia-team/nvidia-images",
+      "repository": "CHANGE-ME-REGISTRY-FQDN:4567/nvidia-team/nvidia-images",
       "image": "vgpu-manager",
       "version": "535.54.06",
       "imagePullSecrets": ["private-registry-secret"],
@@ -110,7 +110,7 @@
       "enabled": true
     },
     "vgpuDeviceManager": {
-      "repository": "my.private.registry:4567/nvidia-team/nvidia-images",
+      "repository": "CHANGE-ME-REGISTRY-FQDN:4567/nvidia-team/nvidia-images",
       "image": "vgpu-device-manager",
       "version": "v0.2.3-ubi8",
       "imagePullSecrets": ["private-registry-secret"],

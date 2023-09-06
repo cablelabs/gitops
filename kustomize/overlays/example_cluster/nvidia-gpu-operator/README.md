@@ -31,7 +31,7 @@ cp ~/Downloads/Host_Drivers/*-vgpu-kvm.run ./
 
 Build image
 ```bash
-export PRIVATE_REGISTRY=my.private.registry:4567/nvidia-team/nvidia-images VERSION=535.54.06 OS_TAG=rhcos4.10 CUDA_VERSION=12.2.0
+export PRIVATE_REGISTRY=CHANGE-ME-REGISTRY-FQDN:4567/nvidia-team/nvidia-images VERSION=535.54.06 OS_TAG=rhcos4.10 CUDA_VERSION=12.2.0
 podman image build \
   --build-arg DRIVER_VERSION=${VERSION} \
   --build-arg CUDA_VERSION=${CUDA_VERSION} \
@@ -54,7 +54,7 @@ podman pull nvcr.io/nvidia/cloud-native/vgpu-device-manager:v0.2.3-ubi8
 
 Upload container to private registery
 ```
-podman push $IMAGE my.private.registry:4567/nvidia-team/nvidia-images/vgpu-device-manager:v0.2.3-ubi8
+podman push $IMAGE CHANGE-ME-REGISTRY-FQDN:4567/nvidia-team/nvidia-images/vgpu-device-manager:v0.2.3-ubi8
 ```
 
 ### Private registery secret
